@@ -9,6 +9,9 @@ namespace API.Controllers
 {
     [ApiController]
     [Route("[controller]")]
+    // This is ignored by swagger.(The WeatherForecastController)
+    // This will mean that swagger doesn't produce this inside our documentation.
+    [ApiExplorerSettings(IgnoreApi = true)]
     public class WeatherForecastController : ControllerBase
     {
         private static readonly string[] Summaries = new[]
