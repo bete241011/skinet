@@ -5,6 +5,7 @@ import { RouterModule } from '@angular/router';
 import { NotFoundComponent } from './not-found/not-found.component';
 import { ServerErrorComponent } from './server-error/server-error.component';
 import { ToastrModule } from 'ngx-toastr';
+import { TestErrorComponent } from './test-error/test-error.component';
 
 
 
@@ -12,7 +13,8 @@ import { ToastrModule } from 'ngx-toastr';
   declarations: [
     NavBarComponent,
     NotFoundComponent,
-    ServerErrorComponent
+    ServerErrorComponent,
+    TestErrorComponent
   ],
   imports: [
     CommonModule,
