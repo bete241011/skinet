@@ -9,7 +9,8 @@ import { AccountService } from '../account.service';
   styleUrls: ['./register.component.scss']
 })
 export class RegisterComponent implements OnInit {
-  registerForm!: FormGroup
+  registerForm!: FormGroup;
+  errors: string[] = [];
 
   constructor(private fb: FormBuilder, private accountService: AccountService, private router: Router) { }
 
@@ -32,6 +33,7 @@ export class RegisterComponent implements OnInit {
       },
       error => {
         console.log(error);
+        this.errors = error.errors;
       });
   }
 
