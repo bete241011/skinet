@@ -1,6 +1,4 @@
 using System.Collections.Generic;
-using System.Linq;
-using System.Security.Claims;
 using System.Threading.Tasks;
 using API.Dtos;
 using API.Errors;
@@ -36,25 +34,25 @@ namespace API.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<IReadOnlyList<Order>>> GetOrdersForUser()
+        public async Task<ActionResult<IReadOnlyList<OrderDto>>> GetOrdersForUser()
         {
             var email = HttpContext.User.RetrieveEmailFromPrincipal();
 
             var orders = await _orderService.GetOrdersForUserAsync(email);
 
-            return Ok(orders);   
+            return Ok(_mapper.Map<IReadOnlyList<Order>, IReadOnlyList<OrderToReturnDto>>(orders));   
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<Order>> GetOrdersByIdForUser(int id)
+        public async Task<ActionResult<OrderToReturnDto>> GetOrdersByIdForUser(int id)
         {
             var email = HttpContext.User.RetrieveEmailFromPrincipal();
 
-            var orders = await _orderService.GetOrderByIdAsync(id, email);
+            var order = await _orderService.GetOrderByIdAsync(id, email);
 
-            if (orders == null) return NotFound(new ApiResponse(404));
+            if (order == null) return NotFound(new ApiResponse(404));
 
-            return orders;   
+            return _mapper.Map<Order, OrderToReturnDto>(order);   
         }
 
         [HttpGet("deliveryMethods")]

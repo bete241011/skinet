@@ -37,6 +37,7 @@ namespace Infrastructure.Data
                     {
                         modelBuilder.Entity(entityType.Name).Property(property.Name).HasConversion<double>();
                     }
+                    
                     foreach (var property in dateTimeProperties)
                     {
                         modelBuilder.Entity(entityType.Name).Property(property.Name).HasConversion(new DateTimeOffsetToBinaryConverter());
