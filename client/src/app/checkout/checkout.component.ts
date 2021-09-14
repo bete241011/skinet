@@ -7,7 +7,7 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
   styleUrls: ['./checkout.component.scss']
 })
 export class CheckoutComponent implements OnInit {
-  checkoutForm?: FormGroup;
+  checkoutForm!: FormGroup;
 
   constructor(private fb: FormBuilder) { }
 
