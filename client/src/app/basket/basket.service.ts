@@ -88,6 +88,13 @@ export class BasketService {
     }
   }
 
+  // This one is just a clean up, that delete cleans basket after submitting the order.
+  deleteLocalBasket(id?: string) {
+    this.basketSource.next(null);
+    this.basketTotalSource.next(null);
+    localStorage.removeItem('basket_id');
+  }
+
   deleteBasket(basket: IBasket | null) {
     return this.http.delete(this.baseUrl + 'basket?id=' + basket!.id).subscribe(() => {
       this.basketSource.next(null);
