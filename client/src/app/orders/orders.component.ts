@@ -11,7 +11,7 @@ import { OrdersService } from './orders.service';
 export class OrdersComponent implements OnInit {
   orders!: IOrder[]
 
-  constructor(private ordersService: OrdersService, private router: Router) { }
+  constructor(private ordersService: OrdersService) { }
 
   ngOnInit(): void {
     this.getOrders();
