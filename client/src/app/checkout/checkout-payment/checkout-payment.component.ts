@@ -33,6 +33,11 @@ export class CheckoutPaymentComponent implements AfterViewInit, OnDestroy {
   cardHandler = this.onChange.bind(this);
   loading = false;
 
+  // The belows are for stripe card element validator.
+  cardNumberValid = false;
+  cardExpiryValid = false;
+  cardCvcValid = false;
+
   constructor(
     private basketService: BasketService,
     private checkoutService: CheckoutService,
@@ -65,13 +70,26 @@ export class CheckoutPaymentComponent implements AfterViewInit, OnDestroy {
     this.cardCvc.destroy();
   }
 
-  onChange(errors: any) {
-    // console.log(error);
-    const { error } = errors;
-    if (error) {
-      this.cardErrors = error?.message;
+  onChange(event: any) {
+    console.log(event);
+    if (event.error) {
+      this.cardErrors = event.error?.message;
     } else {
       this.cardErrors = null;
+    }
+    switch (event.elementType) {
+      case 'cardNumber':
+        this.cardNumberValid = event.complete;
+        break;
+      case 'cardExpiry':
+        this.cardExpiryValid = event.complete;
+        break;
+      case 'cardCvc':
+        this.cardCvcValid = event.complete;
+        break;
+
+      default:
+        break;
     }
   }
 
