@@ -1,4 +1,11 @@
-import { AfterViewInit, Component, ElementRef, Input, OnDestroy, ViewChild } from '@angular/core';
+import {
+  AfterViewInit,
+  Component,
+  ElementRef,
+  Input,
+  OnDestroy,
+  ViewChild,
+} from '@angular/core';
 import { FormGroup } from '@angular/forms';
 import { NavigationExtras, Router } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
@@ -15,15 +22,16 @@ declare var Stripe: any;
 })
 export class CheckoutPaymentComponent implements AfterViewInit, OnDestroy {
   @Input() checkoutForm!: FormGroup;
-  @ViewChild('cardNumber', {static: true}) cardNumberElement!: ElementRef;
-  @ViewChild('cardExpiry', {static: true}) cardExpiryElement!: ElementRef;
-  @ViewChild('cardCvc', {static: true}) cardCvcElement!: ElementRef;
+  @ViewChild('cardNumber', { static: true }) cardNumberElement!: ElementRef;
+  @ViewChild('cardExpiry', { static: true }) cardExpiryElement!: ElementRef;
+  @ViewChild('cardCvc', { static: true }) cardCvcElement!: ElementRef;
   stripe: any;
   cardNumber: any;
   cardExpiry: any;
   cardCvc: any;
   cardErrors: any;
   cardHandler = this.onChange.bind(this);
+  loading = false;
 
   constructor(
     private basketService: BasketService,
@@ -33,7 +41,9 @@ export class CheckoutPaymentComponent implements AfterViewInit, OnDestroy {
   ) {}
 
   ngAfterViewInit(): void {
-    this.stripe = Stripe('pk_test_51Jac37Bn9axm3LvDAZs09hpfj20A1dzbBykyT10QGbHORhjs1MvHsWjBRd9yAzZYVNJ2Y8az0IV0B4Y2IOQSAERf00SFDTeCFi');
+    this.stripe = Stripe(
+      'pk_test_51Jac37Bn9axm3LvDAZs09hpfj20A1dzbBykyT10QGbHORhjs1MvHsWjBRd9yAzZYVNJ2Y8az0IV0B4Y2IOQSAERf00SFDTeCFi'
+    );
     const elements = this.stripe.elements();
 
     this.cardNumber = elements.create('cardNumber');
@@ -57,7 +67,7 @@ export class CheckoutPaymentComponent implements AfterViewInit, OnDestroy {
 
   onChange(errors: any) {
     // console.log(error);
-    const {error} = errors;
+    const { error } = errors;
     if (error) {
       this.cardErrors = error?.message;
     } else {
@@ -65,35 +75,41 @@ export class CheckoutPaymentComponent implements AfterViewInit, OnDestroy {
     }
   }
 
-  submitOrder() {
+  async submitOrder() {
+    this.loading = true;
     const basket = this.basketService.getCurrentBasketValue();
-    const orderToCreate = this.getOrderToCreate(basket);
-    this.checkoutService.createOrder(orderToCreate).subscribe(
-      (order: IOrder) => {
-        this.toastr.success('Order created successfully');
-        this.stripe.confirmCardPayment(basket?.clientSecret, {
-          payment_method: {
-            card: this.cardNumber,
-            billing_details: {
-              name: this.checkoutForm.get('paymentForm')?.get('nameOnCard')?.value
-            }
-          }
-        }).then((result: any) => {
-          console.log(result);
-          if (result.paymentIntent) {
-            this.basketService.deleteLocalBasket(basket?.id);
-            const navigationExtras: NavigationExtras = {state: order}
-            this.router.navigate(['checkout/success'], navigationExtras);
-          } else {
-            this.toastr.error(result.error.message);
-          }
-        });
-      },
-      (error) => {
-        this.toastr.error(error.message);
-        console.log(error);
+    try {
+      const createdOrder = await this.createOrder(basket);
+      const paymentResult = await this.confirmPaymentWithStripe(basket);
+
+      if (paymentResult.paymentIntent) {
+        this.basketService.deleteLocalBasket(basket?.id);
+        const navigationExtras: NavigationExtras = { state: createdOrder };
+        this.router.navigate(['checkout/success'], navigationExtras);
+      } else {
+        this.toastr.error(paymentResult.error.message);
       }
-    );
+      this.loading = false;
+    } catch (error) {
+      console.log(error);
+      this.loading = false;
+    }
+  }
+
+  private async confirmPaymentWithStripe(basket: IBasket | null) {
+    return this.stripe.confirmCardPayment(basket?.clientSecret, {
+      payment_method: {
+        card: this.cardNumber,
+        billing_details: {
+          name: this.checkoutForm.get('paymentForm')?.get('nameOnCard')?.value,
+        },
+      },
+    });
+  }
+
+  private async createOrder(basket: IBasket | null) {
+    const orderToCreate = this.getOrderToCreate(basket);
+    return this.checkoutService.createOrder(orderToCreate).toPromise();
   }
 
   private getOrderToCreate(basket: IBasket | null) {
