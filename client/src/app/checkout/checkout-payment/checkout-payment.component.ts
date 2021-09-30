@@ -71,7 +71,7 @@ export class CheckoutPaymentComponent implements AfterViewInit, OnDestroy {
   }
 
   onChange(event: any) {
-    console.log(event);
+    // console.log(event);
     if (event.error) {
       this.cardErrors = event.error?.message;
     } else {
